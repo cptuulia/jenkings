@@ -84,3 +84,20 @@ Restart Jenkings if not done automatically
 
 Open
 http://localhost:8080/manage/cloud/new
+
+
+Name jenkings-test-container
+Docker Cloud details => Docker Host URI : tcp://172.23.0.3:80
+
+
+
+### Define Docker Host URI
+
+Here we define the uri to nginx container
+get this by following
+docker inspect jenkings_test_nginx | grep 'IP'
+find :  "IPAddress": "172.23.0.3",,
+
+You can test by 
+nc -zv 172.23.0.3 80
+and http://172.23.0.3:80

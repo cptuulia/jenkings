@@ -10,7 +10,7 @@ https://docs.google.com/document/d/1DPQVp7qVV-yVpLuZbCcUJT8H8rQ3Lu1LmwZ-Dki4AlQ/
 https://github.com/devopsjourney1/jenkins-101
 
 
-## Install
+# Install
 https://hub.docker.com/r/jenkins/jenkins/
 https://github.com/jenkinsci/docker/blob/master/README.md
 
@@ -39,7 +39,7 @@ This may also be found at: /var/jenkins_home/secrets/initialAdminPassword
 2025-02-27 08:56:09.464+0000 [id=51]	INFO	hudson.util.Retrier#start: Performed the action check updates server successfully at the attempt #1
 ```
 
-### Restart  and ssh
+## Restart  and ssh
 ```
 docker restart jenkings_local
 docker exec -it jenkings_local sh
@@ -47,6 +47,9 @@ docker exec -it jenkings_local sh
 ## Configure
 
 http://localhost:8080/
+
+Select : install recommended plugins and wait...
+
 Give the password shown in the installation. If you did not get it
 do 
 ```
@@ -60,3 +63,24 @@ username admin
 password 123
 
 
+# Php Container
+
+
+## Install jenkingTestContainer
+```
+ cd jenkingsTestContainer
+ sudo chmod 777 .docker/db/data/
+ docker compose up -d
+
+```
+
+http://localhost:8080/manage/cloud/
+Click "Install Plugin"
+(http://localhost:8080/manage/cloud/)
+
+Select Docker and install
+
+Restart Jenkings if not done automatically
+
+Open
+http://localhost:8080/manage/cloud/new

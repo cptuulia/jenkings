@@ -1,0 +1,1 @@
+echo "tail -f   .docker/logs/mysql-query.log"

@@ -117,3 +117,17 @@ You can test by docker run command
 ```
 docker run -it --rm --name tuulia_test -v "$PWD":/usr/src/myapp -w /usr/src/myapp jenkingstestcontainer-php php  jenkingsTestContainer/phpinfo.php
 ```
+
+
+echo "#########################################################################"
+echo php version
+php -v
+echo "#########################################################################"
+echo Create file /var/jenkins_home/workspace/php standard image/test.php
+echo "<?php phpinfo();" >test.php
+
+more test.php
+echo "#########################################################################"
+php test.php
+echo "#########################################################################"
+rm test.php

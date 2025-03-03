@@ -1,1 +1,2 @@
 docker restart jenkings_local
+docker restart jenkings_alpine_socat

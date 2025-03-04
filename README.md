@@ -22,7 +22,11 @@ See also script
 
 ```
 docker pull jenkins/jenkins:jdk17
-docker run --name jenkings_local -p 8080:8080 -p 50000:50000 --restart=on-failure jenkins/jenkins:lts-jdk17 
+docker run --name $JENKINGS_LOCAl_CONTAINER -p 8080:8080 -p 50000:50000 \  
+        --privileged=true \ 
+        -v/usr/bin/docker:/usr/bin/docker -v /var/run/docker.sock:/var/run/docker.sock \
+        --restart=on-failure \ 
+        jenkins/jenkins:lts-jdk17
 
 ```
 
@@ -51,6 +55,10 @@ docker network create jenkins
 docker network ls
 ```
 
+Note the lines below enable to use Docker
+```
+  -v/usr/bin/docker:/usr/bin/docker -v /var/run/docker.sock:/var/run/docker.sock 
+```
 ## Restart  and ssh
 ```
 docker restart jenkings_local

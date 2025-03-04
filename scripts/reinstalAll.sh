@@ -13,7 +13,10 @@ JENKINS_PHP_CONTAINER=jenkins_php
 JENKINS_PHP_IMAGE=jenkinsphp-php
 
 
-declare -a CONTAINERS=($JENKINGS_ALPINE_SOCAT_CONTAINER, $JENKINGS_LOCAl_CONTAINER, $JENKINS_PHP_CONTAINER )
+declare -a CONTAINERS=(
+    $JENKINGS_LOCAl_CONTAINER 
+    $JENKINS_PHP_CONTAINER
+    $JENKINGS_ALPINE_SOCAT_CONTAINER )
 
 
 
@@ -69,12 +72,12 @@ function push_image {
         docker login -u tuulia
 
         REMOTE_NAME="tuulia/$IMAGE"
-       
-      
+
+
         docker tag $IMAGE $REMOTE_NAME
         docker push $REMOTE_NAME
- printf "\n\n> Image $REMOTE_NAME pushed to https://hub.docker.com/repositories/tuulia \n"
-   press_enter_to_continue
+        printf "\n\n> Image $REMOTE_NAME pushed to https://hub.docker.com/repositories/tuulia \n"
+        press_enter_to_continue
 
 } 
 
@@ -99,9 +102,11 @@ function install_jenkings {
         printf "\n ee8a74c50a7d47a5989057be5431cb0c \n\n"
         printf "\nThis may also be found at: /var/jenkins_home/secrets/initialAdminPassword\n"
         printf "\n----------------------------------\n\n"
-         printf "\nYou are ready now. You can press control + c and restart by scripts/restartJenkings.sh\n\n"
-         press_enter_to_continue
-        docker run --name $JENKINGS_LOCAl_CONTAINER -p 8080:8080 -p 50000:50000 --restart=on-failure jenkins/jenkins:lts-jdk17
+     
+        press_enter_to_continue
+           
+        docker run --name $JENKINGS_LOCAl_CONTAINER -p 8080:8080 -p 50000:50000   --privileged=true -v /usr/bin/docker:/usr/bin/docker -v /var/run/docker.sock:/var/run/docker.sock --restart=on-failure jenkins/jenkins:lts-jdk17
+        printf "\nYou are ready now. You can press control + c and restart by scripts/restartJenkings.sh\n\n"
         echo    
 } 
 
@@ -160,20 +165,14 @@ function press_enter_to_continue {
 #############################################################################
 
 printf "\n\n \n \n" 
-echo "###############################################################"
-echo "#"
-echo "# This script will reinstall all"
-echo "#"
-echo "#################################################################"
 
-press_enter_to_continue
 
 for CONTAINER in "${CONTAINERS[@]}"
 do
 
     echo "#################################################################"
     echo "#"
-    echo "#  Removing container  $CONTAINER"
+    echo "#  Removing container  $CONTAINER "
     echo "#"
     echo "#################################################################"
     echo 
@@ -183,20 +182,15 @@ do
     if [[ $doit == "y" ]]; then
 
         if [[ $CONTAINER == $JENKINGS_ALPINE_SOCAT_CONTAINER ]]; then
-             remove_container $CONTAINER
-            if remove_image $JENKINGS_ALPINE_SOCAT_IMAGE; 
-                then 
-                install_alpine_socat
-            fi
+            remove_container $CONTAINER
+            remove_image $JENKINGS_ALPINE_SOCAT_IMAGE; 
+            install_alpine_socat
         fi
 
         if [[ $CONTAINER == $JENKINGS_LOCAl_CONTAINER ]]; then
-       
-             remove_container $CONTAINER
-            if remove_image $JENKINGS_LOCAL_IMAGE; 
-                then 
-                install_jenkings
-            fi
+            remove_container $CONTAINER
+            remove_image $JENKINGS_LOCAL_IMAGE;  
+            install_jenkings
         fi
 
 

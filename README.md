@@ -14,6 +14,12 @@ https://github.com/devopsjourney1/jenkins-101
 https://hub.docker.com/r/jenkins/jenkins/
 https://github.com/jenkinsci/docker/blob/master/README.md
 
+
+See also script 
+```
+ scripts/reinstalAll.sh
+```
+
 ```
 docker pull jenkins/jenkins:jdk17
 docker run --name jenkings_local -p 8080:8080 -p 50000:50000 --restart=on-failure jenkins/jenkins:lts-jdk17 
@@ -39,6 +45,12 @@ This may also be found at: /var/jenkins_home/secrets/initialAdminPassword
 2025-02-27 08:56:09.464+0000 [id=51]	INFO	hudson.util.Retrier#start: Performed the action check updates server successfully at the attempt #1
 ```
 
+Create network and check
+```
+docker network create jenkins
+docker network ls
+```
+
 ## Restart  and ssh
 ```
 docker restart jenkings_local
@@ -49,6 +61,11 @@ docker exec -it jenkings_local sh
 http://localhost:8080/
 
 Select : install recommended plugins and wait...
+
+
+username admin
+password 123
+
 
 Give the password shown in the installation. If you did not get it
 do 
@@ -62,25 +79,55 @@ to
 username admin
 password 123
 
+# Alpine Socat 
+
+This is required for the connectio  a docker user agent.
+https://hub.docker.com/r/alpine/socat
+
+```
+ docker run -d --restart=always --name jenkings_alpine_socat \
+        -p 127.0.0.1:2376:2375 \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        alpine/socat \
+        tcp-listen:2375,fork,reuseaddr unix-connect:/var/run/docker.sock
+```
+
+You can test by
+```
+# get 'IPAddress by
+docker inspect jenkings_alpine_socat |grep 'IPAddress'
+# "SecondaryIPAddresses": null,
+#            "IPAddress": "172.17.0.2",
+#                    "IPAddress": "172.17.0.2",
+#
+
+
+nc -zv IIPAddress  2375
+
+```
+
 
 # Php Container
 
-
-## Install jenkingTestContainer
 ```
- cd jenkingsTestContainer
- sudo chmod 777 .docker/db/data/
- docker compose up -d
-
+./scripts/startTestContainer.sh
 ```
 
-http://localhost:8080/manage/cloud/
-Click "Install Plugin"
-(http://localhost:8080/manage/cloud/)
+You can test by docker run command
+```
+docker run -it --rm --name tuulia_test -v "$PWD":/usr/src/myapp -w /usr/src/myapp jenkingstestcontainer-php php  jenkingsTestContainer/phpinfo.php
+```
 
-Select Docker and install
 
-Restart Jenkings if not done automatically
+echo "#########################################################################"
+echo php version
+php -v
+echo "#########################################################################"
+echo Create file /var/jenkins_home/workspace/php standard image/test.php
+echo "<?php phpinfo();" >test.php
 
-Open
-http://localhost:8080/manage/cloud/new
+more test.php
+echo "#########################################################################"
+php test.php
+echo "#########################################################################"
+rm test.php

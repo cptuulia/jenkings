@@ -1,8 +1,0 @@
-/.idea
-/.idea/*
-/.idea/phpunit.xml
-/vendor
-.env
-.env.testing
-.phpunit.result.cache
-

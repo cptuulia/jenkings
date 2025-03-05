@@ -1,10 +1,33 @@
+/*
+docker run -d   -v /var/jenkins_home/workspace:/var/www/ --name jenkins-php-pipeline jenkinsphp-php
+
+docker run -d    --name jenkins-php-pipeline jenkinsphp-php  
+docker cp ./dddd/ jenkins-php-pipeline:/var/www/ 
+docker exec jenkins-php-pipeline mv dddd/* /var/www/
+docker exec  jenkins-php-pipeline ls dddd
+docker stop jenkins-php-pipeline ; docker rm jenkins-php-pipeline
+
+
+cd /var/jenkins_home/workspace/dddd/jenkinsPhp/code; tar -czvf  example.tar . 
+docker run -d    --name jenkins-php-pipeline jenkinsphp-php
+docker cp example.tar jenkins-php-pipeline:/var/www/  
+rm  example.tar
+cd /var/jenkins_home/workspace/dddd/
+docker cp ./dddd/ jenkins-php-pipeline:/var/www/ 
+docker exec  jenkins-php-pipeline ls 
+docker exec  jenkins-php-pipeline tar -xvf example.tar
+docker exec  jenkins-php-pipeline ls 
+docker stop jenkins-php-pipeline ; docker rm jenkins-php-pipeline
+
+
+*/
 pipeline {
     agent any
 
        environment {
                 DOCKER_IMAGE_NAME = "jenkinsphp-php" // Docker image name
                 DOCKER_CONTAINER_NAME = "jenkins-php-pipeline" // Docker image version tag
-                JENKINS_WORKSPACE_PATH="/var/jenkins_home/tuulia_test/"
+                JENKINS_WORKSPACE_PATH="/var/jenkins_home/workspace/dddd/jenkinsPhp/code/*"
         //       APP_PORT = "8093"  // Target port for the application
         // PATH = "/usr/local/bin/composer:${env.PATH}"
     }
@@ -16,31 +39,54 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 script {
-                  
-                    echo "Cloning repository from GitHub..."
-                    git url: 'https://github.com/cptuulia/jenkings', branch: 'pipeline'
+                        sh 'pwd'  // Verify that the repository is cloned correctly
+                        echo "Cloning repository from GitHub..."
+                        git url: 'https://github.com/cptuulia/jenkings', branch: 'pipeline'
 
-                    echo "Listing workspace contents for verification..."
-                    sh 'ls -la'  // Verify that the repository is cloned correctly
+                        echo "Listing workspace contents for verification..."
+                        sh 'ls $JENKINS_WORKSPACE_PATH -la'  // Verify that the repository is cloned correctly
+
+                        sh 'cd /var/jenkins_home/workspace/dddd/jenkinsPhp/code; tar -czvf  example.tar . '
+                        sh 'sleep 15 '
+                        sh 'docker run -d    --name jenkins-php-pipeline jenkinsphp-php'
+                        sh 'ls /var/jenkins_home/workspace/dddd/jenkinsPhp/code'
+                        sh 'docker cp /var/jenkins_home/workspace/dddd/jenkinsPhp/code/example.tar jenkins-php-pipeline:/var/www/  '
+                        sh 'rm  /var/jenkins_home/workspace/dddd/jenkinsPhp/code/example.tar'
+                        sh 'cd /var/jenkins_home/workspace/dddd/'
+
+                        sh 'docker exec  jenkins-php-pipeline ls '
+                        sh 'docker exec  jenkins-php-pipeline tar -xvf example.tar'
+                        sh 'sleep 10'
+                        echo "after uncompressing tar"
+                        sh 'docker exec  jenkins-php-pipeline ls '
+
+                    
                 }
             }
         }
-
+/*
     stage('Run container') {
             steps {
                 script {
                     echo "Run Container $DOCKER_CONTAINER_NAME"
+                    // We cannot use in the container the standard docker way to mount volume as below. We must copy the code
                     //sh 'docker run -d   -v /var/jenkins_home/workspace/php-pipeline/jenkinsPhp/code/:/var/www --name $DOCKER_CONTAINER_NAME $DOCKER_IMAGE_NAME  '
                     sh 'docker run -d   -v $JENKINS_WORKSPACE_PATH:/var/www/ --name $DOCKER_CONTAINER_NAME $DOCKER_IMAGE_NAME  '
                     echo "Waiting for the container to start..."
-                    sleep(10)
-
+                    // sleep(10)
+                    // Copy folder (with docker cp yoy cannot use wildcard./jenkinsPhp/code/* so we copy the folder )
+                    sh "docker cp /var/jenkins_home/workspace/dddd/ jenkins-php-pipeline:/var/www/ "
+                    echo "So far it works"
+                    sh "docker exec jenkins-php-pipeline ls /var/www/dddd/jenkinsPhp/code"
+                    echo 'But not any more with a wild card !!!:( '
+                    sh "docker exec jenkins-php-pipeline mv /var/www/dddd/jenkinsPhp/code/* /var/www/"
                     echo "Run Container $DOCKER_CONTAINER_NAME  2"
-                    sh 'docker ps'
-                       echo "Run Container $DOCKER_CONTAINER_NAME  3"
-                    sh 'docker exec  $DOCKER_CONTAINER_NAME ls '
-                       echo "Run Container $DOCKER_CONTAINER_NAME  4"
-                     echo "---------------------------"
+                    //sh 'docker ps'
+                    echo "Run Container $DOCKER_CONTAINER_NAME  3"
+                    sh 'docker exec  $DOCKER_CONTAINER_NAME ls code'
+                    echo "Run Container $DOCKER_CONTAINER_NAME  4"
+                    sh 'docker exec  $DOCKER_CONTAINER_NAME pwd '
+                    echo "---------------------------"
                     sh 'pwd'
                     echo "---------------------------"
                     sh 'ls $JENKINS_WORKSPACE_PATH'
@@ -50,7 +96,7 @@ pipeline {
         }
 
 
-        stage('Install composer files') {
+        stage('rmover Container') {
             steps {
                 script {
                     echo "Run php composer"
@@ -61,6 +107,6 @@ pipeline {
             }
         }
 
-
+*/
     }
 }

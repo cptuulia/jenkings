@@ -1,0 +1,66 @@
+pipeline {
+    agent any
+
+       environment {
+                DOCKER_IMAGE_NAME = "jenkinsphp-php" // Docker image name
+                DOCKER_CONTAINER_NAME = "jenkins-php-pipeline" // Docker image version tag
+                JENKINS_WORKSPACE_PATH="/var/jenkins_home/tuulia_test/"
+        //       APP_PORT = "8093"  // Target port for the application
+        // PATH = "/usr/local/bin/composer:${env.PATH}"
+    }
+
+   
+
+    stages {
+
+        stage('Clone Repository') {
+            steps {
+                script {
+                  
+                    echo "Cloning repository from GitHub..."
+                    git url: 'https://github.com/cptuulia/jenkings', branch: 'pipeline'
+
+                    echo "Listing workspace contents for verification..."
+                    sh 'ls -la'  // Verify that the repository is cloned correctly
+                }
+            }
+        }
+
+    stage('Run container') {
+            steps {
+                script {
+                    echo "Run Container $DOCKER_CONTAINER_NAME"
+                    //sh 'docker run -d   -v /var/jenkins_home/workspace/php-pipeline/jenkinsPhp/code/:/var/www --name $DOCKER_CONTAINER_NAME $DOCKER_IMAGE_NAME  '
+                    sh 'docker run -d   -v $JENKINS_WORKSPACE_PATH:/var/www/ --name $DOCKER_CONTAINER_NAME $DOCKER_IMAGE_NAME  '
+                    echo "Waiting for the container to start..."
+                    sleep(10)
+
+                    echo "Run Container $DOCKER_CONTAINER_NAME  2"
+                    sh 'docker ps'
+                       echo "Run Container $DOCKER_CONTAINER_NAME  3"
+                    sh 'docker exec  $DOCKER_CONTAINER_NAME ls '
+                       echo "Run Container $DOCKER_CONTAINER_NAME  4"
+                     echo "---------------------------"
+                    sh 'pwd'
+                    echo "---------------------------"
+                    sh 'ls $JENKINS_WORKSPACE_PATH'
+                 
+                }
+            }
+        }
+
+
+        stage('Install composer files') {
+            steps {
+                script {
+                    echo "Run php composer"
+                  sh 'docker stop  $DOCKER_CONTAINER_NAME'
+                    sh 'docker rm $DOCKER_CONTAINER_NAME'
+                   
+                }
+            }
+        }
+
+
+    }
+}

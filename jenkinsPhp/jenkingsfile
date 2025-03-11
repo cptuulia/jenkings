@@ -4,6 +4,7 @@
 //        Normally it helps if you rebuild. Propaply the server is not ready immediately after save.
 //       Also if you update GIT repo, you need often build twice,  before it works
 //   
+//   ... updating all plugins may help...  
 //
 // For direct CLI testing use jenkinsfile.sh
 //

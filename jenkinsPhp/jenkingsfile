@@ -13,8 +13,8 @@ pipeline {
     agent any
 
        environment {
-        PIPELINE_NAME ='dddd'
-        GIT_BRANCH = 'pipeline'
+        PIPELINE_NAME ='php-pipeline'
+        GIT_BRANCH = 'main'
         GIT_REPO_URL = 'https://github.com/cptuulia/jenkings'
         DOCKER_IMAGE_NAME = "jenkinsphp-php" // Docker image name
         DOCKER_CONTAINER_NAME = "jenkins-php-pipeline" // Docker image version tag

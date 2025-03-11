@@ -52,8 +52,8 @@ function remove_image {
     read -p "Give the image id of $IMAGE if you want to remove it   (others just hit enter)  " image_id 
      if [[ $image_id != "" ]]; then
      echo
-        printf "\n\n>docker image rm  $image_id\n\n"
-        docker image rm $image_id
+        printf "\n\n>docker image rm --force  $image_id\n\n"
+        docker image  rm --force $image_id
         press_enter_to_continue
         # 0 = true
         return 0 
@@ -66,7 +66,13 @@ function remove_image {
 ##################################################################
 #
 function push_image {
+      
         IMAGE=$1
+         
+         printf "\n\n>push_image $IMAGE IN COMMENTS\n"
+           press_enter_to_continue
+           return
+
         printf "\n\n>pusging image $IMAGE\n\n"
         printf "\n\n>login -u tuulia $IMAGE\n"
         docker login -u tuulia
@@ -196,7 +202,10 @@ do
 
         if [[ $CONTAINER == $JENKINS_PHP_CONTAINER ]]; then
             remove_container $CONTAINER
+             
+            remove_image "tuulia/$JENKINS_PHP_IMAGE"
             remove_image $JENKINS_PHP_IMAGE
+        
             install_jenkins_php
             push_image $JENKINS_PHP_IMAGE
         fi

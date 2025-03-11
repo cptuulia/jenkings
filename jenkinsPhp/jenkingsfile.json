@@ -1,0 +1,140 @@
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// NOTE: Often the build crashes after updating this file without a reason.
+//        Normally it helps if you rebuild. Propaply the server is not ready immediately after save.
+//       Also if you update GIT repo, you need often build twice,  before it works
+//   
+//
+// For direct CLI testing use jenkinsfile.sh
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+pipeline {
+    agent any
+
+       environment {
+        PIPELINE_NAME ='dddd'
+        GIT_BRANCH = 'pipeline'
+        GIT_REPO_URL = 'https://github.com/cptuulia/jenkings'
+        DOCKER_IMAGE_NAME = "jenkinsphp-php" // Docker image name
+        DOCKER_CONTAINER_NAME = "jenkins-php-pipeline" // Docker image version tag
+        JENKINS_WORKSPACE_PATH="/var/jenkins_home/workspace/$PIPELINE_NAME/jenkinsPhp/code"
+    }
+
+   
+    stages {
+
+        stage('Clone Repository') {
+            steps {
+                script {
+                    echo "Cloning repository from GitHub..."
+                    git url: "${env.GIT_REPO_URL}", branch: "${env.GIT_BRANCH}"  
+                    echo "Repository is cloned"                   
+                }
+            }
+        }
+
+        
+    stage('Run Containers') {
+            steps {
+                script {
+                    
+                    try{
+                        // If the build has been crashed, last time, the containers must be removed first
+                        echo "Stop and remove  Container $DOCKER_CONTAINER_NAME (if running)    "
+                        sh 'docker stop  $DOCKER_CONTAINER_NAME'
+                        sh 'docker rm $DOCKER_CONTAINER_NAME'
+                     } catch(e) {
+                        echo "Container $DOCKER_CONTAINER_NAME is  not running, so no need to stop it. Don't worry." 
+                    }
+
+                    echo "Run Container $DOCKER_CONTAINER_NAME"
+                    // We cannot use in the container the standard docker way to mount volume as below. We must copy the code
+                    // This would probably  work if Jenkins was not in a container, but having its own docker.
+                    // In this application we use the docker docker of the host. 
+                    //docker run -d  -v ./jenkinsPhp/code:/var/www --name jenkins-php-pipeline223 jenkinsphp-php 
+                    try{
+                        sh 'docker run -d  --name $DOCKER_CONTAINER_NAME $DOCKER_IMAGE_NAME'
+                        echo "Container $DOCKER_CONTAINER_NAME started"
+                        sh 'sleep 10'
+                    } catch(e) {
+                        echo "Could not start $DOCKER_CONTAINER_NAME "
+                        echo e.getMessage()
+                        sh 'exit 1'  
+                    }
+                }
+            }
+        }
+
+        stage('Copy code to the container and install php vendor files') {
+            steps {
+                script {
+                    echo "Copy php code to  $DOCKER_CONTAINER_NAME"
+                    // The only known way to do it,is to compress the files to a tar file
+                    // and copy it to the container and uncompress again
+     
+                    sh 'cd $JENKINS_WORKSPACE_PATH; tar -czvf example.tar . '
+                    sh 'sleep 15 '
+                   
+                    sh 'docker cp  $JENKINS_WORKSPACE_PATH/example.tar ${DOCKER_CONTAINER_NAME}:/var/www/  '
+                
+                    sh 'docker exec  ${DOCKER_CONTAINER_NAME} tar -xvf example.tar'
+                    sh 'sleep 15'
+                    echo "php are files copied"
+                   
+                    sh 'rm $JENKINS_WORKSPACE_PATH/example.tar  '
+                    echo "Install Php vendor files"
+                    sh 'docker exec  ${DOCKER_CONTAINER_NAME} composer install'
+                    echo "vendor files installed"
+                }
+            }
+        }
+
+        stage('run PHP Unit tests') {
+            steps {
+                script {
+                    echo "run PHP Unit tests"
+                        // Run tests by creating and copying junit.xml
+                        // It seems that we don't need to create and copy  junit.xml...
+                        // The lines below are in comments, in case it seems that wee need them
+                        // We run php unit with configuration in Tests/phpunit.xml ,
+                        // which write the results in the file  build/logs/junit.xml,
+                        // which we copy to this container and analyze the results in 'post'
+                        // sh 'docker exec  ${DOCKER_CONTAINER_NAME} ./vendor/bin/phpunit -c Tests/phpunit.xml Tests/Feature/simpleTest.php '
+                        // echo "copy junit.xml"
+                        // sh 'docker cp  ${DOCKER_CONTAINER_NAME}:/var/www/build/logs/junit.xml  ./junit.xml '
+                        // echo "junit.xml is copied"
+
+                    sh 'docker exec  ${DOCKER_CONTAINER_NAME} ./vendor/bin/phpunit  Tests/Feature/simpleTest.php '
+                    echo "PHP Unit test are done'"
+                }
+            }
+        }
+
+        stage('Remove Containers') {
+            steps {
+                script {
+                    echo "Remove containers"
+                    sh 'docker stop  $DOCKER_CONTAINER_NAME'
+                    sh 'docker rm $DOCKER_CONTAINER_NAME'
+                     echo "Containers are removed"
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "This part is always executed"
+            // It seems that the pipeline crashes even without this line
+            // If the tests fail
+            //junit('junit.xml', allowEmptyResults: true)
+        }
+        success {
+            echo "Pipeline executed successfully!"
+        }
+        failure {
+            echo "Pipeline failed. Please check the logs."
+        }
+    }
+}

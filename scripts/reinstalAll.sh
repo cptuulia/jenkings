@@ -1,3 +1,8 @@
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Reinstistall 
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #Jenkings container
 JENKINGS_LOCAl_CONTAINER=jenkings_local
@@ -148,7 +153,13 @@ function install_jenkins_php {
     cd jenkinsPhp
     printf "\n\n>docker compose up -d\n\n"
     docker compose up -d
+    echo $JENKINS_PHP_CONTAINER installed
     press_enter_to_continue
+    docker ps
+    press_enter_to_continue
+    echo remove obsolte container $JENKINS_PHP_CONTAINER 
+    docker stop $JENKINS_PHP_CONTAINER
+    docker rm $JENKINS_PHP_CONTAINER
     cd ..
 }
 

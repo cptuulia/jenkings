@@ -90,6 +90,8 @@ password 123
 
 # Alpine Socat 
 
+You ony need this, if you want to use Agents.
+I rather use direct containers.
 This is required for the connectio  a docker user agent.
 https://hub.docker.com/r/alpine/socat
 
@@ -116,27 +118,11 @@ nc -zv IIPAddress  2375
 ```
 
 
-# Php Container
+# jenkinsphp
 
-```
-./scripts/startTestContainer.sh
-```
-
-You can test by docker run command
-```
-docker run -it --rm --name tuulia_test -v "$PWD":/usr/src/myapp -w /usr/src/myapp jenkingstestcontainer-php php  jenkingsTestContainer/phpinfo.php
-```
+In this folder I have the definition for the container I use for the PHP pipeline job.
+See more in chapter Php Pipeline
 
 
-echo "#########################################################################"
-echo php version
-php -v
-echo "#########################################################################"
-echo Create file /var/jenkins_home/workspace/php standard image/test.php
-echo "<?php phpinfo();" >test.php
 
-more test.php
-echo "#########################################################################"
-php test.php
-echo "#########################################################################"
-rm test.php
+https://docs.google.com/document/d/1DPQVp7qVV-yVpLuZbCcUJT8H8rQ3Lu1LmwZ-Dki4AlQ/edit?tab=t.0

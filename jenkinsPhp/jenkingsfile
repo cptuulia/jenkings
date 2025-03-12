@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // NOTE: Often the build crashes after updating this file without a reason.
-//        Normally it helps if you rebuild. Propaply the server is not ready immediately after save.
+//        Normally it helps if you rebuild. Probably the server is not ready immediately after save.
 //       Also if you update GIT repo, you need often build twice,  before it works
 //   
 //   ... updating all plugins may help...  
@@ -18,8 +18,14 @@ pipeline {
         GIT_BRANCH = 'main'
         GIT_REPO_URL = 'https://github.com/cptuulia/jenkings'
         DOCKER_IMAGE_NAME = "jenkinsphp-php" // Docker image name
-        DOCKER_CONTAINER_NAME = "jenkins-php-pipeline" // Docker image version tag
+        DOCKER_PHP_CONTAINER_NAME = "jenkins-php-pipeline" // Docker image version tag
         JENKINS_WORKSPACE_PATH="/var/jenkins_home/workspace/$PIPELINE_NAME/jenkinsPhp/code"
+    
+        DOCKER_MYSQL_IMAGE_NAME="mysql:8.0"
+        DOCKER_MYSQL_CONTAINER_NAME="jenkins-mysql-pipeline"
+        DATABASE_NAME="jenkins-php_db_name"
+
+        DOCKER_NETWORK_NAME="jenkins-php-pipeline"
     }
 
    
@@ -39,74 +45,118 @@ pipeline {
     stage('Run Containers') {
             steps {
                 script {
-                    
+
+                    //
+                    //  create network
+                    //
+                    try{
+                        sh 'docker network create $DOCKER_NETWORK_NAME'
+                       } catch(e) {
+                       // just don' crash, probably the network already exists
+                        echo e.getMessage()
+                    } 
+
+                    //
+                    //  run php container
+                    //
                     try{
                         // If the build has been crashed, last time, the containers must be removed first
-                        echo "Stop and remove  Container $DOCKER_CONTAINER_NAME (if running)    "
-                        sh 'docker stop  $DOCKER_CONTAINER_NAME'
-                        sh 'docker rm $DOCKER_CONTAINER_NAME'
+                        echo "Stop and remove  Container $DOCKER_PHP_CONTAINER_NAME (if running)    "
+                        sh 'docker stop  $DOCKER_PHP_CONTAINER_NAME'
+                        sh 'docker rm $DOCKER_PHP_CONTAINER_NAME'
                      } catch(e) {
-                        echo "Container $DOCKER_CONTAINER_NAME is  not running, so no need to stop it. Don't worry." 
+                        echo "Container $DOCKER_PHP_CONTAINER_NAME is  not running, so no need to stop it. Don't worry." 
                     }
 
-                    echo "Run Container $DOCKER_CONTAINER_NAME"
+                    echo "Run Container $DOCKER_PHP_CONTAINER_NAME"
                     // We cannot use in the container the standard docker way to mount volume as below. We must copy the code
                     // This would probably  work if Jenkins was not in a container, but having its own docker.
                     // In this application we use the docker docker of the host. 
-                    //docker run -d  -v ./jenkinsPhp/code:/var/www --name jenkins-php-pipeline223 jenkinsphp-php 
+                    //docker run -d  -v ./jenkinsPhp/code:/var/www --name jenkins-php-pipeline jenkinsphp-php 
                     try{
-                        sh 'docker run -d  --name $DOCKER_CONTAINER_NAME $DOCKER_IMAGE_NAME'
-                        echo "Container $DOCKER_CONTAINER_NAME started"
-                        sh 'sleep 10'
+                        sh 'docker run -d  --name $DOCKER_PHP_CONTAINER_NAME    --network $DOCKER_NETWORK_NAME $DOCKER_IMAGE_NAME'
+                        echo "Container $DOCKER_PHP_CONTAINER_NAME started"
+                      
                     } catch(e) {
-                        echo "Could not start $DOCKER_CONTAINER_NAME "
+                        echo "Could not start $DOCKER_PHP_CONTAINER_NAME "
                         echo e.getMessage()
                         sh 'exit 1'  
                     }
+             
+                    
+                    try{
+                        // If the build has been crashed, last time, the containers must be removed first
+                        echo "Stop and remove  Container $DOCKER_MYSQL_CONTAINER_NAME (if running)    "
+                        sh 'docker stop  $DOCKER_MYSQL_CONTAINER_NAME'
+                        sh 'docker rm $DOCKER_MYSQL_CONTAINER_NAME'
+                     } catch(e) {
+                        echo "Container $DOCKER_MYSQL_CONTAINER_NAME is  not running, so no need to stop it. Don't worry." 
+                    }
+
+                    //
+                    //  run mysql container
+                    //
+
+                    echo "Run Container $DOCKER_MYSQL_CONTAINER_NAME"
+                   
+                    try{
+                        sh 'docker run -d -v ./.docker/db/data:/var/lib/mysql -v ./.docker/logs:/var/log/mysql -v ./.docker/db/my.cnf:/etc/mysql/conf.d/my.cnf -v ./.docker/db/sql:/docker-entrypoint-initdb.d -e MYSQL_ROOT_PASSWORD="root" -e MYSQL_DATABASE=${DATABASE_NAME} -e MYSQL_USER="jenkins-php_db_user" -e MYSQL_PASSWORD="jenkins-php_db_pass" -p 3306:3306 --network $DOCKER_NETWORK_NAME --name $DOCKER_MYSQL_CONTAINER_NAME $DOCKER_MYSQL_IMAGE_NAME'
+
+                        echo "Container $DOCKER_MYSQL_CONTAINER_NAME started"
+                       
+                    } catch(e) {
+                        echo "Could not start $DOCKER_MYSQL_CONTAINER_NAME "
+                        echo e.getMessage()
+                        sh 'exit 1'  
+                    }
+
+                     sh 'sleep 10'
                 }
             }
         }
 
+
         stage('Copy code to the container and install php vendor files') {
             steps {
                 script {
-                    echo "Copy php code to  $DOCKER_CONTAINER_NAME"
+                    echo "Copy php code to  $DOCKER_PHP_CONTAINER_NAME"
                     // The only known way to do it,is to compress the files to a tar file
                     // and copy it to the container and uncompress again
      
                     sh 'cd $JENKINS_WORKSPACE_PATH; tar -czvf example.tar . '
                     sh 'sleep 15 '
                    
-                    sh 'docker cp  $JENKINS_WORKSPACE_PATH/example.tar ${DOCKER_CONTAINER_NAME}:/var/www/  '
+                    sh 'docker cp  $JENKINS_WORKSPACE_PATH/example.tar ${DOCKER_PHP_CONTAINER_NAME}:/var/www/  '
                 
-                    sh 'docker exec  ${DOCKER_CONTAINER_NAME} tar -xvf example.tar'
+                    sh 'docker exec  ${DOCKER_PHP_CONTAINER_NAME} tar -xvf example.tar'
                     sh 'sleep 15'
                     echo "php are files copied"
                    
                     sh 'rm $JENKINS_WORKSPACE_PATH/example.tar  '
                     echo "Install Php vendor files"
-                    sh 'docker exec  ${DOCKER_CONTAINER_NAME} composer install'
+                    sh 'docker exec  ${DOCKER_PHP_CONTAINER_NAME} composer install'
                     echo "vendor files installed"
                 }
             }
         }
 
-        stage('run PHP Unit tests') {
+        stage('Install database') {
+            steps {
+                script {
+                    echo "Install Database"
+                    sh 'echo "DROP TABLE  IF EXISTS  Test; CREATE TABLE Test (id int NOT NULL AUTO_INCREMENT, name varchar(255),   PRIMARY KEY (id)); SHOW tables;" > createTableTest.sql'
+                    sh 'docker exec -i $DOCKER_PHP_CONTAINER_NAME  mysql -h $DOCKER_MYSQL_CONTAINER_NAME -uroot -proot $DATABASE_NAME <createTableTest.sql'
+                    sh 'rm createTableTest.sql'
+                    echo "Database installed"
+                }
+            }
+    }
+
+            stage('run PHP Unit tests') {
             steps {
                 script {
                     echo "run PHP Unit tests"
-                        // Run tests by creating and copying junit.xml
-                        // It seems that we don't need to create and copy  junit.xml...
-                        // The lines below are in comments, in case it seems that wee need them
-                        // We run php unit with configuration in Tests/phpunit.xml ,
-                        // which write the results in the file  build/logs/junit.xml,
-                        // which we copy to this container and analyze the results in 'post'
-                        // sh 'docker exec  ${DOCKER_CONTAINER_NAME} ./vendor/bin/phpunit -c Tests/phpunit.xml Tests/Feature/simpleTest.php '
-                        // echo "copy junit.xml"
-                        // sh 'docker cp  ${DOCKER_CONTAINER_NAME}:/var/www/build/logs/junit.xml  ./junit.xml '
-                        // echo "junit.xml is copied"
-
-                    sh 'docker exec  ${DOCKER_CONTAINER_NAME} ./vendor/bin/phpunit  Tests/Feature/simpleTest.php '
+                    sh 'docker exec  ${DOCKER_PHP_CONTAINER_NAME} ./vendor/bin/phpunit  -c Tests/phpunit.xml Tests/Feature/simpleTest.php '
                     echo "PHP Unit test are done'"
                 }
             }
@@ -116,9 +166,12 @@ pipeline {
             steps {
                 script {
                     echo "Remove containers"
-                    sh 'docker stop  $DOCKER_CONTAINER_NAME'
-                    sh 'docker rm $DOCKER_CONTAINER_NAME'
-                     echo "Containers are removed"
+                    sh 'docker stop  $DOCKER_PHP_CONTAINER_NAME'
+                    sh 'docker rm $DOCKER_PHP_CONTAINER_NAME'
+                    sh 'docker stop  $DOCKER_MYSQL_CONTAINER_NAME'
+                    sh 'docker rm $DOCKER_MYSQL_CONTAINER_NAME'
+                    sh 'docker network rm $DOCKER_NETWORK_NAME'
+                    echo "Containers are removed"
                 }
             }
         }
@@ -127,9 +180,6 @@ pipeline {
     post {
         always {
             echo "This part is always executed"
-            // It seems that the pipeline crashes even without this line
-            // If the tests fail
-            //junit('junit.xml', allowEmptyResults: true)
         }
         success {
             echo "Pipeline executed successfully!"

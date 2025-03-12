@@ -77,7 +77,8 @@ docker run -d \
 
 #
 # command to ssh to $DOCKER_CONTAINER_NAME 
-#
+# docker exec -it  $DOCKER_CONTAINER_NAME bash
+
 # command to ssh to  $DOCKER_MYSQL_CONTAINER_NAME
 # docker exec -it  $DOCKER_MYSQL_CONTAINER_NAME  mysql -u root -proot
 # or run myql from the php container

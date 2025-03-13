@@ -1,12 +1,12 @@
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// A script to build a PHP pipeline job
-//
-// See more in chapter Php Pipeline
-// https://docs.google.com/document/d/1DPQVp7qVV-yVpLuZbCcUJT8H8rQ3Lu1LmwZ-Dki4AlQ/edit?tab=t.0
-//
-///////////////////////////////////////////////////////////////////////////////////////////////////
+##########################################################################
+#
+# A script to build a PHP pipeline job
+#
+# See more in chapter Php Pipeline
+# https:#docs.google.com/document/d/1DPQVp7qVV-yVpLuZbCcUJT8H8rQ3Lu1LmwZ-Dki4AlQ/edit?tab=t.0
+#
+##########################################################################
 
 . ./scripts/buildPipeLine/data.sh
 

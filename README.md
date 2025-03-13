@@ -88,6 +88,12 @@ to
 username admin
 password 123
 
+# cli commands
+
+
+http://localhost:8080/manage/cli/
+
+
 # Alpine Socat 
 
 You ony need this, if you want to use Agents.

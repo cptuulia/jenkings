@@ -26,6 +26,10 @@ pipeline {
         DATABASE_NAME="jenkins-php_db_name"
 
         DOCKER_NETWORK_NAME="jenkins-php-pipeline"
+
+        //see script jenkinsPhp/jenkinsfile.sh
+        JENKINS_ENV_PATH='/var/jenkins_home/tuulia/php_pipeline/environment'
+
     }
 
    
@@ -150,7 +154,7 @@ pipeline {
                     echo "Database installed"
                 }
             }
-    }
+        }
 
             stage('run PHP Unit tests') {
             steps {
@@ -161,6 +165,38 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy') {
+            steps {
+                script {
+
+                    // First we define local varaibles, you can use sh output only with locals
+                    def PHP_PIPELINE_FTP_HOST_URL= sh(returnStdout: true, script: 'cat "$JENKINS_ENV_PATH/PHP_PIPELINE_FTP_HOST_URL"')
+                    def PHP_PIPELINE_FTP_USER= sh(returnStdout: true, script: 'cat "$JENKINS_ENV_PATH/PHP_PIPELINE_FTP_USER"')
+                    def PHP_PIPELINE_FTP_PASSWORD= sh(returnStdout: true, script: 'cat "$JENKINS_ENV_PATH/PHP_PIPELINE_FTP_PASSWORD"')
+
+
+                    //echo "PHP_PIPELINE_FTP_HOST_URL ${PHP_PIPELINE_FTP_HOST_URL} "
+                    //echo "PHP_PIPELINE_FTP_USER ${PHP_PIPELINE_FTP_USER} "
+                    //echo "PHP_PIPELINE_FTP_PASSWORD ${PHP_PIPELINE_FTP_PASSWORD} "
+
+                    // Then we copy the valuas to envrinment vars, we can only use them in git configuration
+                    env.ENV_PHP_PIPELINE_FTP_HOST_URL="${PHP_PIPELINE_FTP_HOST_URL}"
+                    env.ENV_PHP_PIPELINE_FTP_USER="${PHP_PIPELINE_FTP_USER}"
+                    env.ENV_PHP_PIPELINE_FTP_PASSWORD="${PHP_PIPELINE_FTP_PASSWORD}"
+
+                    sh('git config git-ftp.url $ENV_PHP_PIPELINE_FTP_HOST_URL')
+                    sh('git config git-ftp.user "${ENV_PHP_PIPELINE_FTP_USER}"') 
+                    sh('git config git-ftp.password "${ENV_PHP_PIPELINE_FTP_PASSWORD}"')
+
+                    //sh('git config --get git-ftp.url')
+                    //sh('git config --get git-ftp.user')
+                    //sh('git config --get git-ftp.password')
+
+                    sh('git ftp init')
+                }
+            }
+        }  
 
         stage('Remove Containers') {
             steps {

@@ -29,6 +29,10 @@ DATABASE_NAME=jenkins-php_db_name
 
 DOCKER_NETWORK_NAME=jenkins-php-pipeline
 
+# see script jenkinsPhp/jenkinsfile.sh
+JENKINS_ENV_PATH="/var/jenkins_home/tuulia/php_pipeline/environment/"
+
+
  
 ##################################################################################
 #
@@ -124,6 +128,31 @@ rm createTableTest.sql
 # run phpunit
 docker exec $DOCKER_CONTAINER_NAME ./vendor/bin/phpunit  -c Tests/phpunit.xml    Tests/Feature/simpleTest.php 
 
+
+##################################################################################
+#
+# Deploy
+#
+##################################################################################
+
+PHP_PIPELINE_FTP_HOST_URL=$(cat "$JENKINS_ENV_PATH/PHP_PIPELINE_FTP_HOST_URL")
+PHP_PIPELINE_FTP_HOST_USER=$(cat "$JENKINS_ENV_PATH/PHP_PIPELINE_FTP_USER")
+PHP_PIPELINE_FTP_HOST_PASSWORD=$(cat "$JENKINS_ENV_PATH/PHP_PIPELINE_FTP_PASSWORD")
+echo "tt1 $PHP_PIPELINE_FTP_HOST_URL"
+echo "tt2 $PHP_PIPELINE_FTP_HOST_USER"
+echo "tt3 $PHP_PIPELINE_FTP_HOST_PASSWORD"
+
+
+git config git-ftp.user $PHP_PIPELINE_FTP_HOST_USER  
+git config git-ftp.url $PHP_PIPELINE_FTP_HOST_URL
+git config git-ftp.password $PHP_PIPELINE_FTP_HOST_PASSWORD
+    
+    
+git config --get git-ftp.url
+git config --get git-ftp.user
+git config --get git-ftp.password
+
+git ftp init   
 ##################################################################################
 #
 # clean up

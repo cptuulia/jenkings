@@ -16,7 +16,7 @@ class simpleTest extends BaseTest
 {
     public function testAssert(): void
     {
-        $this->assertEquals(1,1 );
+        $this->assertEquals(1,2 );
     }
 
 

@@ -127,7 +127,7 @@ pipeline {
                     // The only known way to do it,is to compress the files to a tar file
                     // and copy it to the container and uncompress again
      
-                    sh 'cd $JENKINS_WORKSPACE_PATH; tar -czvf example.tar . '
+                    sh 'cd $JENKINS_WORKSPACE_PATH; tar -czvf example.tar * '
                     sh 'sleep 15 '
                    
                     sh 'docker cp  $JENKINS_WORKSPACE_PATH/example.tar ${DOCKER_PHP_CONTAINER_NAME}:/var/www/  '

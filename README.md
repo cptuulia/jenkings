@@ -1,21 +1,19 @@
- 
-
-
 # My Google Notes
+
 https://docs.google.com/document/d/1DPQVp7qVV-yVpLuZbCcUJT8H8rQ3Lu1LmwZ-Dki4AlQ/edit?tab=t.0
 
 # Sources
 
-
 https://github.com/devopsjourney1/jenkins-101
 
-
 # Install
+
 https://hub.docker.com/r/jenkins/jenkins/
 https://github.com/jenkinsci/docker/blob/master/README.md
 
+**  !!! This repo is private. Make it public, to make these examples to work.!!!**
+See also script
 
-See also script 
 ```
  scripts/reinstalAll.sh
 ```
@@ -27,6 +25,7 @@ docker run --name jenkings_local -p 8080:8080 -p 50000:50000 --privileged=true -
 ```
 
 You should see the following and no command prompt
+
 ```
 Jenkins initial setup is required. An admin user has been created and a password generated.
 Please use the following password to proceed to installation:
@@ -46,55 +45,59 @@ This may also be found at: /var/jenkins_home/secrets/initialAdminPassword
 ```
 
 Create network and check
+
 ```
 docker network create jenkins
 docker network ls
 ```
 
 Note the lines below enable to use Docker
+
 ```
   -v/usr/bin/docker:/usr/bin/docker -v /var/run/docker.sock:/var/run/docker.sock 
 ```
 
 Also do this in the host machine
+
 ```
 sudo chmod 777 /var/run/docker.sock
 ```
+
 ## Restart  and ssh
+
 ```
 docker restart jenkings_local
 docker exec -it jenkings_local sh
 ```
+
 ## Configure
 
 http://localhost:8080/
 
 Select : install recommended plugins and wait...
 
-
 username admin
 password 123
 
-
 Give the password shown in the installation. If you did not get it
-do 
+do
+
 ```
 docker exec -it jenkings_local sh
 more /var/jenkins_home/secrets/initialAdminPassword
 ```
+
 After first login, by the generated password change on page
 http://localhost:8080/user/admin/security/
-to 
+to
 username admin
 password 123
 
 # cli commands
 
-
 http://localhost:8080/manage/cli/
 
-
-# Alpine Socat 
+# Alpine Socat
 
 You ony need this, if you want to use Agents.
 I rather use direct containers.
@@ -110,6 +113,7 @@ https://hub.docker.com/r/alpine/socat
 ```
 
 You can test by
+
 ```
 # get 'IPAddress by
 docker inspect jenkings_alpine_socat |grep 'IPAddress'
@@ -123,12 +127,9 @@ nc -zv IIPAddress  2375
 
 ```
 
-
 # jenkinsphp
 
 In this folder I have the definition for the container I use for the PHP pipeline job.
 See more in chapter Php Pipeline
-
-
 
 https://docs.google.com/document/d/1DPQVp7qVV-yVpLuZbCcUJT8H8rQ3Lu1LmwZ-Dki4AlQ/edit?tab=t.0

@@ -23,8 +23,8 @@ PHP_PIPELINE_FTP_HOST_URL="ftp.tantonius.com/domains/tantonius.com/public_html/j
 cd $REPO_PATH
 
 rm -rf *
-git clone https://github.com/cptuulia/jenkings
-cd jenkings
+git clone https://github.com/cptuulia/jenkins
+cd jenkins
 
 git config git-ftp.url $PHP_PIPELINE_FTP_HOST_URL
 git config git-ftp.user $tantonius_com_ftp_username

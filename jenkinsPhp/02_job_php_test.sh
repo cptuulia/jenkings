@@ -35,13 +35,13 @@ GIT_REPO=main
 ##################################################################################
 
 rm -rf *
-git clone https://github.com/cptuulia/jenkings
-    cd jenkings
+git clone https://github.com/cptuulia/jenkins
+    cd jenkins
 git checkout $GIT_REPO
 cd jenkinsPhp; 
 mv code/* ../..
 cd ../..;
-rm -rf jenkings
+rm -rf jenkins
 
 
 

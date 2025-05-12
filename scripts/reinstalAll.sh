@@ -102,6 +102,10 @@ function install_jenkings {
      echo
        FULL_IMAGE="$JENKINGS_LOCAL_IMAGE:$JENKINGS_LOCAL_IMAGE_TAG";
 
+        printf "\n\n>sudo rm -rf  /var/lib/docker/volumes/jenkins_home/_data/*\n\n"
+        press_enter_to_continue
+        sudo rm -rf  /var/lib/docker/volumes/jenkins_home/_data/*
+
         printf "\n\n>docker pull $FULL_IMAGE\n\n"
         docker pull $FULL_IMAGE
         press_enter_to_continue

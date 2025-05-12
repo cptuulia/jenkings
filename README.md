@@ -63,6 +63,14 @@ Also do this in the host machine
 sudo chmod 777 /var/run/docker.sock
 ```
 
+
+If you want to reinstall jenkins_local
+do
+
+```
+sudo rm -rf  /var/lib/docker/volumes/jenkins_home/_data/*
+
+```
 ## Restart  and ssh
 
 ```

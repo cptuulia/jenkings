@@ -76,5 +76,9 @@ To be able to deploy to the live server wee need to install Git Ftp
 
 ```
 #run in thr host computer:
+docker exec -it --user root jenkins_local  apt-get update 
 docker exec -it --user root jenkins_local  apt-get install git-ftp
 ```
+
+# login to the container
+docker exec -it   --user root jenkins_local  sh

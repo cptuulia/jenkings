@@ -19,10 +19,10 @@ DOCKER_PHP_CONTAINER_NAME="jenkins-php-pipeline"
 
 DOCKER_MYSQL_IMAGE_NAME="mysql:8.0"
 DOCKER_MYSQL_CONTAINER_NAME="jenkins-mysql-pipeline"
-DATABASE_NAME=jenkins-php_db_name
+DATABASE_NAME=jenkins-example_db
 
-DOCKER_NETWORK_NAME=jenkins-php-pipeline
-
+DOCKER_NETWORK_NAME=jenkins-example
+GIT_REPO_URL="https://github.com/my/example.git"
 
 
 GIT_REPO=main
@@ -35,7 +35,7 @@ GIT_REPO=main
 ##################################################################################
 
 rm -rf *
-git clone https://github.com/cptuulia/jenkins
+git clone GIT_REPO_URL
     cd jenkins
 git checkout $GIT_REPO
 cd jenkinsPhp; 

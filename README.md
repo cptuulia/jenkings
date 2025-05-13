@@ -1,3 +1,9 @@
+
+# Installation of the Jenkins container
+
+Here we install the Jenkins server to a container jenkins_local.
+
+
 Here I have followed the notes on:
 [https://github.com/jenkinsci/docker/blob/master/README.md](https://github.com/jenkinsci/docker/blob/master/README.md)
 
@@ -6,16 +12,19 @@ You may find some usefull infomation on the following link:
 
 With the following commands we install the Jenkins in the container jenkins_local, which is an addition to the official installation notes.
 
+
+## Install container
 ```
-
-
 #
 # variables 
 #
 
-# Path tp dockrt dock
-#Ubuntu  24
+# The variables below are defined fot Ubuntu 24
+# Verify these variables in your system.
+# Path to docker dock
+# Ubuntu  24
 DOCKER_SOCK="/var/run/docker.sock"
+# Path to jenkins home
 JENKINS_HOME="/var/jenkins_home"
 
 # Allow docker within the jenkins_local container 
@@ -59,4 +68,13 @@ and following the instructions. Install the recommended plugins.
 You can access to the container by
 ```
 docker exec -it   --user root jenkins_local  sh
+```
+
+## Install Git Ftp
+
+To be able to deploy to the live server wee need to install Git Ftp
+
+```
+#run in thr host computer:
+docker exec -it --user root jenkins_local  apt-get install git-ftp
 ```

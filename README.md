@@ -21,16 +21,17 @@ With the following commands we install the Jenkins in the container jenkins_loca
 
 # The variables below are defined fot Ubuntu 24
 # Verify these variables in your system.
-# Path to docker dock
-# Ubuntu  24
+
+# Allow docker inside a docker container     
+# Read more info from 
+# https://stackoverflow.com/questions/27879713/is-it-ok-to-run-docker-from-inside-docker
+DOCKER_PATH="/usr/bin/docker"
 DOCKER_SOCK="/var/run/docker.sock"
+
 # Path to jenkins home
 JENKINS_HOME="/var/jenkins_home"
 
-# Allow docker within the jenkins_local container 
-# Instead of installing Docker in jenkins_local we use the Docker
-# of the host computer by enabling permissions of the docker.sock
-# Please find the path to way to docker.sock and allow the permissions in your system
+
 sudo chmod 777 $DOCKER_SOCK
 
 
@@ -42,12 +43,15 @@ docker pull jenkins/jenkins:lts-jdk17
 ```
 # run jenkins image by a container name jenkins_local
 docker run -d \
+--privileged=true \
 --name jenkins_local \
 -p 8080:8080 \
 -p 50000:50000 \
+-v /usr/bin/docker:$DOCKER_PATH \
 -v /var/run/docker.sock:$DOCKER_SOCK \
 -v jenkins_home:$JENKINS_HOME \
 jenkins/jenkins:lts-jdk17
+
 ```
 
 After the installation you can restart the jenkins container  by
@@ -55,8 +59,6 @@ After the installation you can restart the jenkins container  by
 ```
 # Allow docker within the jenkins_local container 
 sudo chmod 777 $DOCKER_SOCK
-
-
 # Restart
 docker restart jenkins_local
 ```

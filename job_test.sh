@@ -1,11 +1,11 @@
 
-#######################################################################
+##################################################################################
 #
-#  This is the second  part to test
+#  Jenkins shell script to execute the test job
 #
-# 
-#
-#######################################################################
+##################################################################################
+
+
 
 ##################################################################################
 #
@@ -14,18 +14,16 @@
 ##################################################################################
 
 DOCKER_IMAGE_NAME="jenkinsphp-php" 
-DOCKER_PHP_CONTAINER_NAME="jenkins-php-pipeline" 
+DOCKER_PHP_CONTAINER_NAME="jenkins-php-example" 
 
 
 DOCKER_MYSQL_IMAGE_NAME="mysql:8.0"
-DOCKER_MYSQL_CONTAINER_NAME="jenkins-mysql-pipeline"
+DOCKER_MYSQL_CONTAINER_NAME="jenkins-mysql-example"
 DATABASE_NAME=jenkins-example_db
 
 DOCKER_NETWORK_NAME=jenkins-example
-GIT_REPO_URL="https://github.com/my/example.git"
-
-
-GIT_REPO=main
+GIT_REPO_URL="https://github.com/cptuulia/jenkins.git"
+GIT_BRANCH=main
  
 
 ##################################################################################
@@ -34,11 +32,14 @@ GIT_REPO=main
 #
 ##################################################################################
 
+# Clone the repo and checkout the correct branch
 rm -rf *
-git clone GIT_REPO_URL
-    cd jenkins
-git checkout $GIT_REPO
-cd jenkinsPhp; 
+# make sure that you have rights to clone the repo or make it public
+git clone $GIT_REPO_URL
+cd jenkins
+git checkout $GIT_BRANCH
+
+
 mv code/* ../..
 cd ../..;
 rm -rf jenkins
@@ -100,6 +101,17 @@ sleep 10
 
 ##################################################################################
 #
+# Create database
+#
+##################################################################################
+echo "DROP TABLE  IF EXISTS  Test;
+CREATE TABLE Test (id int NOT NULL AUTO_INCREMENT, name varchar(255),   PRIMARY KEY (id));
+SHOW tables;" > createTableTest.sql
+docker exec -i $DOCKER_PHP_CONTAINER_NAME  mysql -h $DOCKER_MYSQL_CONTAINER_NAME -uroot -proot $DATABASE_NAME <createTableTest.sql
+rm createTableTest.sql
+
+##################################################################################
+#
 # Copy php files and install vendor files
 #
 ##################################################################################
@@ -122,16 +134,6 @@ rm  example.tar
 
 docker exec $DOCKER_PHP_CONTAINER_NAME    composer install  
 
-##################################################################################
-#
-# Create database
-#
-##################################################################################
-echo "DROP TABLE  IF EXISTS  Test;
-CREATE TABLE Test (id int NOT NULL AUTO_INCREMENT, name varchar(255),   PRIMARY KEY (id));
-SHOW tables;" > createTableTest.sql
-docker exec -i $DOCKER_PHP_CONTAINER_NAME  mysql -h $DOCKER_MYSQL_CONTAINER_NAME -uroot -proot $DATABASE_NAME <createTableTest.sql
-rm createTableTest.sql
 
 ##################################################################################
 #

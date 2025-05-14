@@ -13,15 +13,15 @@
 #
 ##################################################################################
 
-    DOCKER_PHP_IMAGE_NAME="jenkins_php" 
-    DOCKER_PHP_CONTAINER_NAME="jenkins_php" 
+DOCKER_PHP_IMAGE_NAME="jenkins_php" 
+DOCKER_PHP_CONTAINER_NAME="jenkins_php" 
 
 
-    DOCKER_MYSQL_IMAGE_NAME="mysql:8.0"
-    DOCKER_MYSQL_CONTAINER_NAME="jenkins_mysql"
-    DATABASE_NAME=jenkins_db
+DOCKER_MYSQL_IMAGE_NAME="mysql:8.0"
+DOCKER_MYSQL_CONTAINER_NAME="jenkins_mysql"
+DATABASE_NAME=jenkins_db
 
-    DOCKER_NETWORK_NAME=jenkins-example
+DOCKER_NETWORK_NAME=jenkins-example
 
 #UPDARE!!!
 GIT_REPO_URL="https://github.com/cptuulia/jenkins.git"
@@ -50,6 +50,7 @@ rm -rf jenkins
 
 
 
+
 ##################################################################################
 #
 # create containers
@@ -73,8 +74,6 @@ set -e
 docker stop $DOCKER_PHP_CONTAINER_NAME || true
 docker rm $DOCKER_PHP_CONTAINER_NAME || true
 
-
-
 # create and start php container
 docker run -d -v .:/var/www  --name $DOCKER_PHP_CONTAINER_NAME --network $DOCKER_NETWORK_NAME $DOCKER_PHP_IMAGE_NAME
 
@@ -86,8 +85,10 @@ docker run -d -v .:/var/www  --name $DOCKER_PHP_CONTAINER_NAME --network $DOCKER
 ###########################################
 
 # Clean up container and images
-docker stop  $DOCKER_MYSQL_CONTAINER_NAME || true
-docker rm  $DOCKER_MYSQL_CONTAINER_NAME || true
+docker stop $DOCKER_MYSQL_CONTAINER_NAME || true
+sleep 5
+docker rm $DOCKER_MYSQL_CONTAINER_NAME || true
+sleep 5
 
 # start mysql container
 # access to client: docker exec -it jenkins_mysql bash -c "mysql -u root -proot jenkins_db"
@@ -109,9 +110,11 @@ sleep 10
 # Create database
 #
 ##################################################################################
-echo "DROP TABLE  IF EXISTS  Test;
-CREATE TABLE Test (id int NOT NULL AUTO_INCREMENT, name varchar(255),   PRIMARY KEY (id));" > createTableTest.sql
-docker exec -i $DOCKER_PHP_CONTAINER_NAME  mysql -h $DOCKER_MYSQL_CONTAINER_NAME -uroot -proot $DATABASE_NAME <createTableTest.sql
+echo "CREATE DATABASE IF NOT EXISTS $DATABASE_NAME; 
+USE $DATABASE_NAME;  
+DROP TABLE  IF EXISTS  Test;
+CREATE TABLE Test (id int NOT NULL AUTO_INCREMENT, name varchar(255),   PRIMARY KEY (id));"  > createTableTest.sql;
+docker exec -i $DOCKER_PHP_CONTAINER_NAME  mysql -h $DOCKER_MYSQL_CONTAINER_NAME -uroot -proot  <createTableTest.sql
 rm createTableTest.sql
 
 ##################################################################################
@@ -123,17 +126,19 @@ rm createTableTest.sql
 
 
 # With a container in a container we cannot mount a folder. we need to copy the
-# files a tar file and uncompress is
-tar -czvf   example.tar *
+# files a tar file and uncompress it
+tar -czvf   code.tar *
 sleep 5
 
-docker cp example.tar $DOCKER_PHP_CONTAINER_NAME:/var/www/
-docker exec $DOCKER_PHP_CONTAINER_NAME tar -xvf example.tar
-
-docker exec $DOCKER_PHP_CONTAINER_NAME  ls /var/www/
+docker exec $DOCKER_PHP_CONTAINER_NAME rm -rf /var/www/composer.lock
+docker exec $DOCKER_PHP_CONTAINER_NAME rm -rf vendor
+docker cp code.tar $DOCKER_PHP_CONTAINER_NAME:/var/www/
+docker exec $DOCKER_PHP_CONTAINER_NAME tar -xvf code.tar
+# uncomment the line below if you want to check
+# docker exec $DOCKER_PHP_CONTAINER_NAME ls /var/www
 
 sleep 5
-rm  example.tar
+rm  code.tar
 
 # install vendor files
 

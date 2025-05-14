@@ -147,13 +147,13 @@ docker exec $DOCKER_PHP_CONTAINER_NAME    composer install
 
 ##################################################################################
 #
-# Run tests
+# Inspect
 #
 ##################################################################################
 
-# run phpunit
+# run phpunit and phpstan
 docker exec $DOCKER_PHP_CONTAINER_NAME ./vendor/bin/phpunit  -c Tests/phpunit.xml    Tests/Feature/simpleTest.php 
-
+docker exec $DOCKER_PHP_CONTAINER_NAMEvendor/bin/phpstan analyse -c config/phpstan.neon --memory-limit 500M
 
 ##################################################################################
 #

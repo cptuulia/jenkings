@@ -13,7 +13,7 @@
 #
 ##################################################################################
 
-DOCKER_PHP_IMAGE_NAME="jenkinsphp-php" 
+DOCKER_IMAGE_NAME="jenkinsphp-php" 
 DOCKER_PHP_CONTAINER_NAME="jenkins-php-example" 
 
 
@@ -39,9 +39,9 @@ git clone $GIT_REPO_URL
 cd jenkins
 git checkout $GIT_BRANCH
 
-# Move the php code to the root of the workspace folder and delete the repo folder
-mv code/* ..
-cd ..;
+
+mv code/* ../..
+cd ../..;
 rm -rf jenkins
 
 
@@ -54,7 +54,7 @@ rm -rf jenkins
 
 # Create network, if does not exist
 docker network ls|grep  $DOCKER_NETWORK_NAME > /dev/null || docker network create --driver bridge  $DOCKER_NETWORK_NAME
-# set flag to ignore errors so that the script does not crash
+# set flag to igonre errors
 set -e
 
 
@@ -64,13 +64,12 @@ set -e
 #
 ###########################################
 
-# Clean up container and images, if they exist( || true prevents the job to crash)
-docker stop $DOCKER_PHP_CONTAINER_NAME || true
-docker rm $DOCKER_PHP_CONTAINER_NAME || true
-docker rmi $DOCKER_PHP_IMAGE_NAME || true
+# || true means no crash if error
+docker stop  $DOCKER_PHP_CONTAINER_NAME || true
+docker rm  $DOCKER_PHP_CONTAINER_NAME || true
 
 # start $DOCKER_PHP_CONTAINER_NAME 
-docker compose -d
+docker run -d -v .:/var/www  --name $DOCKER_PHP_CONTAINER_NAME --network $DOCKER_NETWORK_NAME $DOCKER_IMAGE_NAME
 
 
 ###########################################

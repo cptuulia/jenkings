@@ -6,11 +6,11 @@ services:
     # PHP
     ####################################################################################################
     php:
-        container_name: jenkins_php
+        image: ${DOCKER_IMAGE_NAME}
+        container_name: ${$DOCKER_PHP_CONTAINER_NAME}
         build: .docker/php
         ports:
             - 5173:5173
-        volumes:
-            - ./code:/var/www:cached
+        network: ${DOCKER_NETWORK_NAME}
         
 

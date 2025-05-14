@@ -2,7 +2,7 @@
 
 $params =  [
     'db' => [
-        'host' => 'jenkins_php',
+        'host' => 'jenkins_mysql',
         'database' => 'jenkins_db',
         'username' => 'root',
         'password' => 'root',

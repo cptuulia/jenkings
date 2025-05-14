@@ -84,3 +84,12 @@ docker exec -it --user root jenkins_local  apt-get install git-ftp
 
 # login to the container
 docker exec -it   --user root jenkins_local  sh
+
+
+# Creating php container image
+
+Create an image 'jenkins_php' for the container 'jenkins_php' by the following
+command in the root of this repo.
+```
+docker compose up -d
+```

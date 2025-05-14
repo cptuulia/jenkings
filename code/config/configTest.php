@@ -2,8 +2,8 @@
 
 $params =  [
     'db' => [
-        'host' => 'jenkins-mysql-pipeline',
-        'database' => 'jenkins-php_db_name',
+        'host' => 'jenkins_php',
+        'database' => 'jenkins_db',
         'username' => 'root',
         'password' => 'root',
     ],

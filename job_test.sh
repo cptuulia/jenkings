@@ -13,17 +13,20 @@
 #
 ##################################################################################
 
-DOCKER_PHP_IMAGE_NAME="jenkinsphp-php" 
-DOCKER_PHP_CONTAINER_NAME="jenkins-php-example" 
+    DOCKER_PHP_IMAGE_NAME="jenkins_php" 
+    DOCKER_PHP_CONTAINER_NAME="jenkins_php" 
 
 
-DOCKER_MYSQL_IMAGE_NAME="mysql:8.0"
-DOCKER_MYSQL_CONTAINER_NAME="jenkins-mysql-example"
-DATABASE_NAME=jenkins-example_db
+    DOCKER_MYSQL_IMAGE_NAME="mysql:8.0"
+    DOCKER_MYSQL_CONTAINER_NAME="jenkins_mysql"
+    DATABASE_NAME=jenkins_db
 
-DOCKER_NETWORK_NAME=jenkins-example
+    DOCKER_NETWORK_NAME=jenkins-example
+
+#UPDARE!!!
 GIT_REPO_URL="https://github.com/cptuulia/jenkins.git"
-GIT_BRANCH=main
+#UPDARE!!!
+GIT_BRANCH=demotuulia
  
 
 ##################################################################################
@@ -37,6 +40,7 @@ rm -rf *
 # make sure that you have rights to clone the repo or make it public
 git clone $GIT_REPO_URL
 cd jenkins
+git fetch
 git checkout $GIT_BRANCH
 
 # Move the php code to the root of the workspace folder and delete the repo folder
@@ -54,36 +58,39 @@ rm -rf jenkins
 
 # Create network, if does not exist
 docker network ls|grep  $DOCKER_NETWORK_NAME > /dev/null || docker network create --driver bridge  $DOCKER_NETWORK_NAME
+
+
+
+###########################################
+#
+# create containers
+#
+###########################################
 # set flag to ignore errors so that the script does not crash
 set -e
-
-
-###########################################
-#
-# $DOCKER_PHP_CONTAINER_NAME
-#
-###########################################
 
 # Clean up container and images, if they exist( || true prevents the job to crash)
 docker stop $DOCKER_PHP_CONTAINER_NAME || true
 docker rm $DOCKER_PHP_CONTAINER_NAME || true
-docker rmi $DOCKER_PHP_IMAGE_NAME || true
 
-# start $DOCKER_PHP_CONTAINER_NAME 
-docker compose -d
+
+
+# create and start php container
+docker run -d -v .:/var/www  --name $DOCKER_PHP_CONTAINER_NAME --network $DOCKER_NETWORK_NAME $DOCKER_PHP_IMAGE_NAME
 
 
 ###########################################
 #
-# $DOCKER_MYSQL_CONTAINER_NAME
+# mysql container
 #
 ###########################################
 
-# || true means no crash if error
+# Clean up container and images
 docker stop  $DOCKER_MYSQL_CONTAINER_NAME || true
 docker rm  $DOCKER_MYSQL_CONTAINER_NAME || true
 
-# start  $DOCKER_MYSQL_CONTAINER_NAME
+# start mysql container
+# access to client: docker exec -it jenkins_mysql bash -c "mysql -u root -proot jenkins_db"
 docker run -d \
 -v ./.docker/db/data:/var/lib/mysql \
 -v ./.docker/logs:/var/log/mysql \
@@ -91,12 +98,9 @@ docker run -d \
 -v ./.docker/db/sql:/docker-entrypoint-initdb.d \
 -e MYSQL_ROOT_PASSWORD='root' \
 -e MYSQL_DATABASE=$DATABASE_NAME \
--e MYSQL_USER='jenkins-php_db_user' \
--e MYSQL_PASSWORD='jenkins-php_db_pass' \
 -p 3306:3306 \
 --network $DOCKER_NETWORK_NAME \
---name $DOCKER_MYSQL_CONTAINER_NAME $DOCKER_MYSQL_IMAGE_NAME 
-
+--name $DOCKER_MYSQL_CONTAINER_NAME $DOCKER_MYSQL_IMAGE_NAME  
 
 sleep 10
 
@@ -106,8 +110,7 @@ sleep 10
 #
 ##################################################################################
 echo "DROP TABLE  IF EXISTS  Test;
-CREATE TABLE Test (id int NOT NULL AUTO_INCREMENT, name varchar(255),   PRIMARY KEY (id));
-SHOW tables;" > createTableTest.sql
+CREATE TABLE Test (id int NOT NULL AUTO_INCREMENT, name varchar(255),   PRIMARY KEY (id));" > createTableTest.sql
 docker exec -i $DOCKER_PHP_CONTAINER_NAME  mysql -h $DOCKER_MYSQL_CONTAINER_NAME -uroot -proot $DATABASE_NAME <createTableTest.sql
 rm createTableTest.sql
 
@@ -119,7 +122,8 @@ rm createTableTest.sql
 
 
 
-# don'  t worry about tar: .: file changed as we read it
+# With a container in a container we cannot mount a folder. we need to copy the
+# files a tar file and uncompress is
 tar -czvf   example.tar *
 sleep 5
 

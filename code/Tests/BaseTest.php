@@ -15,15 +15,12 @@ error_reporting(E_ALL);
 use App\Plugins;
 use App\Plugins\Db\Db;
 use PHPUnit\Framework\TestCase;
-use Tests\Traits\THelpers;
 use Tests\Traits\TDatabase;
 use Tests\Traits\THttpRequest;
 
 
 class BaseTest extends TestCase
 {
-
-    use THelpers;
     use TDatabase;
     use THttpRequest;
 

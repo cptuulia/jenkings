@@ -9,7 +9,7 @@
 
 ##################################################################################
 #
-# Define env variables
+# Define variables
 #
 ##################################################################################
 
@@ -25,10 +25,9 @@ GIT_REPO_URL="https://github.com/cptuulia/jenkins.git"
 #UPDARE!!!
 GIT_BRANCH=demotuulia
  
-
 ##################################################################################
 #
-# clone php files
+# Clone the Git repo
 #
 ##################################################################################
 
@@ -46,8 +45,6 @@ cd ..;
 rm -rf jenkins
 
 
-
-
 ##################################################################################
 #
 # Create containers
@@ -59,7 +56,7 @@ docker network ls|grep  $DOCKER_NETWORK_NAME > /dev/null || docker network creat
 
 ###########################################
 #
-# create containers
+# create php container
 #
 ###########################################
 # set flag to ignore errors so that the script does not crash
@@ -86,7 +83,7 @@ docker rm $DOCKER_MYSQL_CONTAINER_NAME || true
 sleep 5
 
 # start mysql container
-# access to client: docker exec -it jenkins_mysql bash -c "mysql -u root -proot jenkins_db"
+# access to mysql client: docker exec -it jenkins_mysql bash -c "mysql -u root -proot jenkins_db"
 docker run -d \
 -v ./.docker/db/data:/var/lib/mysql \
 -v ./.docker/logs:/var/log/mysql \
@@ -148,7 +145,7 @@ docker exec $DOCKER_PHP_CONTAINER_NAME    composer install
 
 # run phpunit and phpstan
 docker exec $DOCKER_PHP_CONTAINER_NAME ./vendor/bin/phpunit  -c Tests/phpunit.xml    Tests/Feature/simpleTest.php 
-docker exec $DOCKER_PHP_CONTAINER_NAME vendor/bin/phpstan analyse -c config/phpstan.neon --memory-limit 500M
+docker exec -it $DOCKER_PHP_CONTAINER_NAME sh -c "vendor/bin/phpstan analyse -c config/phpstan.neon --memory-limit 500M"
 
 ##################################################################################
 #

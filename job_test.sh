@@ -15,13 +15,10 @@
 
 DOCKER_PHP_IMAGE_NAME="jenkins_php" 
 DOCKER_PHP_CONTAINER_NAME="jenkins_php" 
-
-
 DOCKER_MYSQL_IMAGE_NAME="mysql:8.0"
 DOCKER_MYSQL_CONTAINER_NAME="jenkins_mysql"
-DATABASE_NAME=jenkins_db
-
 DOCKER_NETWORK_NAME=jenkins-example
+DATABASE_NAME=jenkins_db
 
 #UPDARE!!!
 GIT_REPO_URL="https://github.com/cptuulia/jenkins.git"
@@ -53,14 +50,12 @@ rm -rf jenkins
 
 ##################################################################################
 #
-# create containers
+# Create containers
 #
 ##################################################################################
 
 # Create network, if does not exist
 docker network ls|grep  $DOCKER_NETWORK_NAME > /dev/null || docker network create --driver bridge  $DOCKER_NETWORK_NAME
-
-
 
 ###########################################
 #
@@ -153,7 +148,7 @@ docker exec $DOCKER_PHP_CONTAINER_NAME    composer install
 
 # run phpunit and phpstan
 docker exec $DOCKER_PHP_CONTAINER_NAME ./vendor/bin/phpunit  -c Tests/phpunit.xml    Tests/Feature/simpleTest.php 
-docker exec $DOCKER_PHP_CONTAINER_NAMEvendor/bin/phpstan analyse -c config/phpstan.neon --memory-limit 500M
+docker exec $DOCKER_PHP_CONTAINER_NAME vendor/bin/phpstan analyse -c config/phpstan.neon --memory-limit 500M
 
 ##################################################################################
 #
